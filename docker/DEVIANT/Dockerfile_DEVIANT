@@ -1,0 +1,55 @@
+#
+# Dockerfile for a Deviant masternode
+# usage: docker run notatestuser/masternode-deviant:latest
+#
+# how to work with the container
+#
+# 1) build the container (checkout desired git revision first)
+# docker build -t "notatestuser/masternode-deviant:latest" -f docker/DEVIANT/Dockerfile_DEVIANT .
+#
+# 2) start the container
+# docker run -p ${NODE_PORT}:${NODE_PORT} -v $(PWD)/data:/opt/deviant/data "notatestuser/masternode-deviant:latest"
+#
+# 3) start the container interactively
+# docker run --interactive --tty --entrypoint=/bin/bash "notatestuser/masternode-deviant:latest"
+
+FROM         ubuntu:xenial
+MAINTAINER   Rafael Dias  <github.com/devrdias>
+
+ENV CONTAINER_USER   masternode
+ENV PROJECT          deviant
+ENV GIT_URL          git://https://github.com/Deviantcoin/=
+ENV SVC_VERSION      3.0.0.1-8e06493
+ENV HOME_DIR         /opt/deviant
+ENV DATA_DIR         /opt/deviant/data
+ENV NODE_PORT        22618
+ENV REFRESHED_AT     2018-01-11
+
+# add unprivileged user
+RUN adduser --shell /bin/bash --disabled-password \
+    --disabled-login --gecos '' ${CONTAINER_USER}
+
+# install packages
+RUN apt-get update && \
+    apt-get -y upgrade && \
+    apt-get install -y software-properties-common python-software-properties && \
+    add-apt-repository ppa:deviant/ppa && \
+    apt-get update && \
+    apt-get install -y deviantd=$SVC_VERSION && \
+    apt-get purge -y python-software-properties && \
+    apt -y autoremove && \
+    rm -rf /var/lib/apt/*
+
+# init home and data dirs
+RUN mkdir -p ${HOME_DIR} && \
+    mkdir -p ${DATA_DIR} && \
+    chown -R ${CONTAINER_USER} ${HOME_DIR} && \
+    chown -R ${CONTAINER_USER} ${DATA_DIR}
+
+# EXPOSE the masternode port
+EXPOSE ${NODE_PORT}
+
+USER ${CONTAINER_USER}
+WORKDIR ${HOME_DIR}
+
+ENTRYPOINT ["sh", "-c", "deviantd -conf=$DATA_DIR/smart.conf -datadir=$DATA_DIR"]
