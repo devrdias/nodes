@@ -19,7 +19,7 @@ MAINTAINER   Rafael Dias  <github.com/devrdias>
 ENV CONTAINER_USER   masternode
 ENV PROJECT          aced
 ENV GIT_URL          git://https://github.com/Acedcoin/AceD/=
-ENV SVC_VERSION      1.8
+ENV SVC_VERSION      1.8.1
 ENV HOME_DIR         /opt/aced
 ENV DATA_DIR         /opt/aced/data
 ENV NODE_PORT        70211
